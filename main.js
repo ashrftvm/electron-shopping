@@ -1,13 +1,16 @@
 const electron = require("electron");
 
-const { app, BrowserWindow, Menu } = electron;
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 let mainWindow;
 let addWindow;
 
 app.on("ready", function() {
   //create window
-  mainWindow = new BrowserWindow({});
+  mainWindow = new BrowserWindow({
+    //dont use this in production if its loading any other remote
+    webPreferences: { nodeIntegration: true }
+  });
   //load html into window
   mainWindow.loadFile("mainWindow.html");
 
@@ -26,7 +29,9 @@ function createAddWindow() {
   addWindow = new BrowserWindow({
     width: 400,
     height: 250,
-    title: "Add Shopping List Item"
+    title: "Add Shopping List Item",
+    //dont use this in production if its loading any other remote
+    webPreferences: { nodeIntegration: true }
   });
 
   addWindow.loadFile("addWindow.html");
@@ -35,6 +40,12 @@ function createAddWindow() {
     addWindow = null;
   });
 }
+
+//catch value from add item
+ipcMain.on("item:add", (e, item) => {
+  mainWindow.webContents.send("item:add", item);
+  addWindow.close();
+});
 
 //create menu template
 const mainMenuTemplate = [
@@ -48,7 +59,10 @@ const mainMenuTemplate = [
         }
       },
       {
-        label: "Clear Items"
+        label: "Clear Items",
+        click() {
+          mainWindow.webContents.send("item:clear");
+        }
       },
       {
         type: "separator"

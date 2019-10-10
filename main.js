@@ -2,6 +2,9 @@ const electron = require("electron");
 
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 
+//set env - dev tools will go away
+process.env.NODE_ENV = "production";
+
 let mainWindow;
 let addWindow;
 
